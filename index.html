@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кібер-Лабораторія Python 🛡️💻</title>
+    <style>
+        :root {
+            --bg-dark: #0a1118;
+            --sidebar-bg: #0f1c2e;
+            --card-bg: #142438;
+            --border-color: #1f3654;
+            --accent-green: #0d9453;
+            --accent-green-hover: #10b981;
+            --accent-blue: #3b82f6;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --code-bg: #0d1520;
+            --code-text: #38bdf8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Верхня панель */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .header-logo p {
+            font-size: 0.8rem;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-bg {
+            width: 120px;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent-green);
+            transition: width 0.3s ease;
+        }
+
+        .score-badge {
+            background-color: #1a332c;
+            border: 1px solid var(--accent-green);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #34d399;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        /* Основний макет */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Бічна панель місій */
+        sidebar {
+            width: 340px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 15px 20px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .mission-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .mission-item:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .mission-item.active {
+            background-color: #162a42;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .mission-item.completed {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .mission-num {
+            font-weight: bold;
+            color: var(--accent-blue);
+            min-width: 22px;
+        }
+
+        .mission-info h4 {
+            margin: 0 0 3px 0;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        .mission-info p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Робоча область */
+        content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-dark);
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .task-header {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .task-title {
+            font-size: 1.4rem;
+            margin: 0 0 12px 0;
+            color: #ffffff;
+        }
+
+        .task-desc {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        /* Розділення коду та консолі */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 320px;
+        }
+
+        .pane {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pane-header {
+            background-color: #0f1c2e;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+        }
+
+        .code-editor-area {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border: none;
+            width: 100%;
+            height: 100%;
+            resize: none;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            outline: none;
+        }
+
+        .console-output {
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #34d399;
+            flex: 1;
+            background-color: #080d14;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        /* Футер з кнопками */
+        .workspace-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .btn-run {
+            background-color: var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-run:hover { background-color: #2b4c75; }
+
+        .btn-verify {
+            background-color: var(--accent-green);
+            color: white;
+        }
+        .btn-verify:hover { background-color: var(--accent-green-hover); }
+
+        /* Модальне вікно відправки */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Верхня панель -->
+    <header>
+        <div class="header-logo">
+            <span style="font-size: 1.8rem;">🛡️</span>
+            <div>
+                <h1>Кібер-Лабораторія Python</h1>
+                <p>Інтерактивний тренажер цифрових компетентностей (9 клас)</p>
+            </div>
+        </div>
+        <div class="header-controls">
+            <div class="progress-container">
+                <span>Прогрес:</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <span id="progressText">0%</span>
+            </div>
+            <div class="score-badge" id="scoreBadge">🏆 Бали: 0 / 12</div>
+            <button class="btn-submit" onclick="openModal()">📤 Надіслати результат</button>
+        </div>
+    </header>
+
+    <!-- Основний інтерфейс -->
+    <div class="main-layout">
+        <!-- Сайдбар місій -->
+        <sidebar>
+            <div class="sidebar-header">
+                <span>СПИСОК МІСІЙ</span>
+                <span id="missionsCount">12 завдань</span>
+            </div>
+            <div id="missionsList" style="overflow-y: auto; max-height: calc(100vh - 120px);">
+                <!-- Заповнюється скриптом -->
+            </div>
+        </sidebar>
+
+        <!-- Робоча зона -->
+        <content-area>
+            <div class="task-header" id="taskCategory">СПИСКИ</div>
+            <h2 class="task-title" id="taskTitle">1. Аналіз масиву цін товарів</h2>
+            <div class="task-desc" id="taskDesc">
+                Завантаження завдання...
+            </div>
+
+            <div class="workspace">
+                <!-- Редактор коду -->
+                <div class="pane">
+                    <div class="pane-header">
+                        <span id="fileName">main.py</span>
+                        <span style="color: var(--accent-green); cursor: pointer;" onclick="resetCode()">🔄 Скинути код</span>
+                    </div>
+                    <textarea class="code-editor-area" id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <!-- Консоль -->
+                <div class="pane">
+                    <div class="pane-header">
+                        <span>💻 Консоль & Результати виконання</span>
+                        <span style="cursor: pointer;" onclick="clearConsole()">🗑️ Очистити</span>
+                    </div>
+                    <div class="console-output" id="consoleOutput">Натисніть «Запустити код» або «Перевірити рішення», щоб побачити результат...</div>
+                </div>
+            </div>
+
+            <div class="workspace-footer">
+                <button class="btn-action btn-run" onclick="runCode()">▶ Запустити код</button>
+                <button class="btn-action btn-verify" onclick="verifyTask()">✔ Перевірити рішення</button>
+            </div>
+        </content-area>
+    </div>
+
+    <!-- Модальне вікно для відправки результатів -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <h3 style="color: #fff; margin-top:0;">Надсилання результатів</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Введіть свої дані, щоб надіслати звіт вчителю на перевірку через Formspree.</p>
+            <form action="https://formspree.io/f/mgaaqlbw" method="POST" onsubmit="prepareForm()">
+                <input type="text" name="student_name" id="studentNameInput" placeholder="Ваше Прізвище та Ім'я" required>
+                <input type="hidden" name="score_report" id="scoreReportInput">
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="btn-action btn-verify" style="flex: 1;">Надіслати</button>
+                    <button type="button" class="btn-action btn-run" onclick="closeModal()" style="flex: 1;">Скасувати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    // 12 місій із самостійним пошуком помилок (самостійна робота учнів)
+    const missions = [
+        {
+            id: 0,
+            category: "СПИСКИ В PYTHON",
+            title: "1. Аналіз масиву цін товарів",
+            desc: "Програма намагається обчислити загальну суму цін для 4 товарів у списку за допомогою циклу, проте під час виконання виникає аварійна зупинка через некоректний обхід елементів. Знайдіть та виправте логічну помилку в коді.",
+            initialCode: "a = [60, 120, 130, 10]\nsuma = 0\nfor i in range(5):\n    suma = suma + a[i]\nprint('Сума:', suma)",
+            solutionCheck: (code) => code.includes('range(4)') || code.includes('range(len(a))'),
+            successOutput: "Сума: 320",
+            errorOutput: "IndexError: list index out of range (Індекс поза межами списку!)",
+            completed: false
+        },
+        {
+            id: 1,
+            category: "УВЕДЕННЯ СПИСКІВ",
+            title: "2. Зчитування списку з клавіатури",
+            desc: "Потрібно організувати введення списку чисел через пропуск в одному рядку. Програма видає помилку на етапі ініціалізації через неправильне звернення до вбудованих функцій. Знайдіть і виправте помилку.",
+            initialCode: "a = list(mep(int, input().split()))\nprint('Кількість елементів:', len(a))",
+            solutionCheck: (code) => code.includes('map(int'),
+            successOutput: "Кількість елементів: 4",
+            errorOutput: "NameError: name 'mep' is not defined",
+            completed: false
+        },
+        {
+            id: 2,
+            category: "ОПРАЦЮВАННЯ СПИСКІВ",
+            title: "3. Додавання елемента до списку",
+            desc: "Скрипт повинен додати новий елемент у кінець порожнього списку за допомогою спеціального методу. Програма зупиняється з помилкою атрибута. Виправте назву методу в коді.",
+            initialCode: "a = []\na.appnd(15)\nprint(a)",
+            solutionCheck: (code) => code.includes('.append('),
+            successOutput: "[15]",
+            errorOutput: "AttributeError: 'list' object has no attribute 'appnd'",
+            completed: false
+        },
+        {
+            id: 3,
+            category: "ФУНКЦІЇ ДЛЯ СПИСКІВ",
+            title: "4. Обчислення загальної суми",
+            desc: "Необхідно знайти суму всіх елементів заданого списку за допомогою вбудованої математичної функції Python. Програма не знаходить відповідну функцію через одрук у назві.",
+            initialCode: "a = [2, 4, 6, 8]\ns = summa(a)\nprint('Сума елементів:', s)",
+            solutionCheck: (code) => code.includes('sum(a)'),
+            successOutput: "Сума елементів: 20",
+            errorOutput: "NameError: name 'summa' is not defined",
+            completed: false
+        },
+        {
+            id: 4,
+            category: "ФУНКЦІЇ min ТА max",
+            title: "5. Пошук найменшої температури",
+            desc: "Програма повинна визначити мінімальне значення у списку температур. Через невірну назву команди виникає помилка іменування. Проаналізуйте код і виправте його.",
+            initialCode: "temperatures = [-3, 5, 0, -8, 12]\nm = mini(temperatures)\nprint('Мінімум:', m)",
+            solutionCheck: (code) => code.includes('min(temperatures)'),
+            successOutput: "Мінімум: -8",
+            errorOutput: "NameError: name 'mini' is not defined",
+            completed: false
+        },
+        {
+            id: 5,
+            category: "ЗРІЗИ СПИСКІВ",
+            title: "6. Виділення частини списку (зріз)",
+            desc: "Завдання полягає у виокремленні зрізу перших трьох елементів зі списку. Проте наразі виводиться лише один скалярний елемент. Змініть синтаксис виділення зрізу.",
+            initialCode: "a = [10, 20, 30, 40, 50]\nb = a[3]\nprint(b)",
+            solutionCheck: (code) => code.includes('a[:3]'),
+            successOutput: "[10, 20, 30]",
+            errorOutput: "Виведено лише один елемент замість списку [10, 20, 30]",
+            completed: false
+        },
+        {
+            id: 6,
+            category: "СОРТУВАННЯ ДАНИХ",
+            title: "7. Упорядкування списку оцінок",
+            desc: "Необхідно відсортувати наявний список за зростанням, використовуючи стандартний метод списків. Програма завершується аварійно через невірний виклик методу.",
+            initialCode: "marks = [8, 4, 10, 6, 12]\nmarks.sorte()\nprint(marks)",
+            solutionCheck: (code) => code.includes('.sort()'),
+            successOutput: "[4, 6, 8, 10, 12]",
+            errorOutput: "AttributeError: 'list' object has no attribute 'sorte'",
+            completed: false
+        },
+        {
+            id: 7,
+            category: "РЯДКОВІ ВЕЛИЧИНИ",
+            title: "8. Визначення довжини текстового рядка",
+            desc: "Скрипт має підрахувати кількість символів у рядку. Під час виконання виникає помилка через невірну назву стандартної функції довжини. Виправте її.",
+            initialCode: "s = 'Інформатика'\nn = lenght(s)\nprint('Довжина рядка:', n)",
+            solutionCheck: (code) => code.includes('len(s)'),
+            successOutput: "Довжина рядка: 11",
+            errorOutput: "NameError: name 'lenght' is not defined",
+            completed: false
+        },
+        {
+            id: 8,
+            category: "МЕТОДИ РЯДКІВ",
+            title: "9. Перевірка префікса телефонного номера",
+            desc: "Програма перевіряє, чи починається рядок номера із заданого коду. Метод написаний із помилкою в літерах, через що об'єкт не може його розпізнати.",
+            initialCode: "phone = '+380931234567'\nres = phone.sttswith('+38')\nprint(res)",
+            solutionCheck: (code) => code.includes('startswith("+38")') || code.includes("startswith('+38')"),
+            successOutput: "True",
+            errorOutput: "AttributeError: 'str' object has no attribute 'sttswith'",
+            completed: false
+        },
+        {
+            id: 9,
+            category: "МЕТОДИ РЯДКІВ",
+            title: "10. Модифікація та заміна тексту",
+            desc: "Потрібно замінити фрагмент тексту в рядку на новий за допомогою спеціального методу рядків. У назві методу допущено одрук. Знайдіть і виправте його.",
+            initialCode: "text = 'старий компютер'\nnew_text = text.replse('старий', 'новий')\nprint(new_text)",
+            solutionCheck: (code) => code.includes('.replace('),
+            successOutput: "новий компютер",
+            errorOutput: "AttributeError: 'str' object has no attribute 'replse'",
+            completed: false
+        },
+        {
+            id: 10,
+            category: "МОДУЛІ В PYTHON",
+            title: "11. Підключення математичного модуля",
+            desc: "Для виконання інженерних розрахунків потрібно задіяти функції з модуля <code>math</code>. Програма падає з помилкою, оскільки забули підключити цей модуль.",
+            initialCode: "# Додайте необхідну інструкцію підключення модуля\nx = math.sqrt(81)\nprint(x)",
+            solutionCheck: (code) => code.includes('import math'),
+            successOutput: "9.0",
+            errorOutput: "NameError: name 'math' is not defined",
+            completed: false
+        },
+        {
+            id: 11,
+            category: "ПІДСУМКОВИЙ ПРОЄКТ",
+            title: "12. Виклик користувацької функції з модуля",
+            desc: "Проєкт імпортує власний модуль для обчислень, але при виклику функції використано хибний роздільник (кома замість крапки). Виправте синтаксис.",
+            initialCode: "import mymodul1\nres = mymodul1,sumnum(123)\nprint('Сума цифр:', res)",
+            solutionCheck: (code) => code.includes('mymodul1.sumnum('),
+            successOutput: "Сума цифр: 6",
+            errorOutput: "SyntaxError: invalid syntax",
+            completed: false
+        }
+    ];
+
+    let currentMissionIndex = 0;
+    let score = 0;
+
+    function renderMissions() {
+        const listContainer = document.getElementById('missionsList');
+        listContainer.innerHTML = '';
+        missions.forEach((m, idx) => {
+            const div = document.createElement('div');
+            div.className = `mission-item ${idx === currentMissionIndex ? 'active' : ''} ${m.completed ? 'completed' : ''}`;
+            div.onclick = () => selectMission(idx);
+            div.innerHTML = `
+                <div class="mission-num">${idx + 1}.</div>
+                <div class="mission-info">
+                    <h4>${m.title.split('. ')[1]}</h4>
+                    <p>${m.completed ? '✅ Виконано (1 бал)' : '⏳ 1 бал'}</p>
+                </div>
+            `;
+            listContainer.appendChild(div);
+        });
+        document.getElementById('missionsCount').innerText = `${missions.length} завдань`;
+        updateProgress();
+    }
+
+    function selectMission(idx) {
+        currentMissionIndex = idx;
+        const m = missions[idx];
+        document.getElementById('taskCategory').innerText = m.category;
+        document.getElementById('taskTitle').innerText = m.title;
+        document.getElementById('taskDesc').innerHTML = m.desc;
+        document.getElementById('codeEditor').value = m.initialCode;
+        document.getElementById('consoleOutput').innerText = "Натисніть «Запустити код» або «Перевірити рішення», щоб побачити результат...";
+        renderMissions();
+    }
+
+    function runCode() {
+        const m = missions[currentMissionIndex];
+        const code = document.getElementById('codeEditor').value;
+        const consoleOut = document.getElementById('consoleOutput');
+        
+        if (m.solutionCheck(code)) {
+            consoleOut.innerText = m.successOutput;
+            consoleOut.style.color = "#34d399";
+        } else {
+            consoleOut.innerText = m.errorOutput;
+            consoleOut.style.color = "#f87171";
+        }
+    }
+
+    function verifyTask() {
+        const m = missions[currentMissionIndex];
+        const code = document.getElementById('codeEditor').value;
+        const consoleOut = document.getElementById('consoleOutput');
+
+        runCode();
+
+        if (m.solutionCheck(code)) {
+            if (!m.completed) {
+                m.completed = true;
+                score += 1;
+            }
+            consoleOut.innerText += "\n\n🎉 АВТОТЕСТ УСПІШНО ПРОЙДЕНО! (+1 бал)";
+            consoleOut.style.color = "#34d399";
+            renderMissions();
+        } else {
+            consoleOut.innerText += "\n\n❌ АВТОТЕСТ НЕ ПРОЙДЕНО. Проаналізуйте код та знайдіть помилку.";
+            consoleOut.style.color = "#f87171";
+        }
+    }
+
+    function resetCode() {
+        document.getElementById('codeEditor').value = missions[currentMissionIndex].initialCode;
+        document.getElementById('consoleOutput').innerText = "Код скинуто до початкового стану.";
+    }
+
+    function clearConsole() {
+        document.getElementById('consoleOutput').innerText = "";
+    }
+
+    function updateProgress() {
+        const completedCount = missions.filter(m => m.completed).length;
+        const percent = Math.round((completedCount / missions.length) * 100);
+        document.getElementById('progressBar').style.width = percent + '%';
+        document.getElementById('progressText').innerText = percent + '%';
+        document.getElementById('scoreBadge').innerText = `🏆 Бали: ${score} / ${missions.length}`;
+    }
+
+    function openModal() {
+        document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('resultModal').style.display = 'none';
+    }
+
+    function prepareForm() {
+        const name = document.getElementById('studentNameInput').value;
+        const completedCount = missions.filter(m => m.completed).length;
+        document.getElementById('scoreReportInput').value = `Учень: ${name} | Виконано місій: ${completedCount}/${missions.length} | Загалом балів: ${score}/${missions.length}`;
+    }
+
+    // Ініціалізація
+    window.onload = () => {
+        selectMission(0);
+    };
+</script>
+
+</body>
+</html>
